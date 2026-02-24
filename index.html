@@ -60,7 +60,7 @@
         #app-header {
             text-align: center;
             margin-bottom: 25px;
-            width: 320px; /* Fixed width to aid rotation constraints */
+            width: 320px; 
         }
 
         h1 { margin: 0 0 5px 0; font-size: 2.5rem; letter-spacing: 3px; font-weight: 800; color: #2d3436; }
@@ -80,9 +80,9 @@
         /* === PvP Cross-Layout CSS Grid === */
         #app-container.pvp-mode {
             display: grid;
-            grid-template-columns: 200px auto 200px;
+            grid-template-columns: 120px auto 120px; /* Tighter columns */
             grid-template-rows: auto auto auto;
-            gap: 20px;
+            gap: 10px; /* Tighter gap */
             height: 100vh;
             padding: 0;
             align-items: center;
@@ -91,12 +91,13 @@
         }
 
         #app-container.pvp-mode .game-row {
-            display: contents; /* Removes the flex wrapper from layout tree */
+            display: contents; 
         }
 
         #app-container.pvp-mode #app-header {
             grid-column: 1; grid-row: 2;
-            transform: rotate(-90deg);
+            /* Rotate and pull closer to the center */
+            transform: rotate(-90deg) translateY(60px);
             margin: 0;
         }
 
@@ -106,7 +107,8 @@
 
         #app-container.pvp-mode #controls {
             grid-column: 3; grid-row: 2;
-            transform: rotate(90deg);
+            /* Rotate and pull closer to the center */
+            transform: rotate(90deg) translateY(60px);
         }
 
         #app-container.pvp-mode #top-info {
@@ -153,7 +155,7 @@
         .col-labels.bottom { margin-top: 10px; }
         .col-label { width: 50px; text-align: center; }
 
-        .rotated-180 { transform: rotate(180deg); }
+        .rotated-180 { transform: rotate(180deg) !important; }
 
         #board {
             display: grid;
@@ -162,7 +164,7 @@
             border: 6px solid #2d3436;
             background-color: #2d3436;
             border-radius: 4px;
-            transition: border-color 0.4s ease; /* Flat turn indicators */
+            transition: border-color 0.4s ease; 
         }
 
         #board.turn-black { border-color: #2d3436; }
@@ -278,6 +280,7 @@
             background: var(--bg-color); padding: 25px; border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.4); max-width: 90%; max-height: 90%;
             overflow-y: auto; position: relative; width: 420px;
+            transition: transform 0.3s ease;
         }
         .modal-content h2 { margin-top: 0; color: #2d3436; border-bottom: 2px solid var(--panel-border); padding-bottom: 10px; }
         .modal-close {
@@ -327,8 +330,9 @@
         <!-- White's Folded Information Module (PvP) -->
         <div id="top-info" class="pvp-only info-bar">
             <span class="info-label">Information:</span>
-            <button class="btn-modal" onclick="openModal('log-modal')">📜 Combat Log</button>
-            <button class="btn-modal" onclick="openModal('legend-modal')">❓ Legend</button>
+            <!-- Pass 'white' to openModal so it rotates 180deg for the top player -->
+            <button class="btn-modal" onclick="openModal('log-modal', 'white')">📜 Combat Log</button>
+            <button class="btn-modal" onclick="openModal('legend-modal', 'white')">❓ Legend</button>
         </div>
 
         <div class="game-row">
@@ -403,15 +407,16 @@
         <!-- Black's Folded Information Module (PvP) -->
         <div id="bottom-info" class="pvp-only info-bar">
             <span class="info-label">Information:</span>
-            <button class="btn-modal" onclick="openModal('log-modal')">📜 Combat Log</button>
-            <button class="btn-modal" onclick="openModal('legend-modal')">❓ Legend</button>
+            <!-- Pass 'black' to openModal so it stays normal for the bottom player -->
+            <button class="btn-modal" onclick="openModal('log-modal', 'black')">📜 Combat Log</button>
+            <button class="btn-modal" onclick="openModal('legend-modal', 'black')">❓ Legend</button>
         </div>
 
     </div>
 
     <!-- Central Modals for Information -->
     <div class="modal-overlay" id="log-modal" onclick="closeModal(event, 'log-modal')">
-        <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-content" id="log-modal-content" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal(null, 'log-modal')">&times;</button>
             <h2>Combat Log</h2>
             <div id="log-pvp" class="log-container-pvp"></div>
@@ -419,7 +424,7 @@
     </div>
 
     <div class="modal-overlay" id="legend-modal" onclick="closeModal(event, 'legend-modal')">
-        <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-content" id="legend-modal-content" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal(null, 'legend-modal')">&times;</button>
             <h2>Legend Reference</h2>
             <div class="legend">
@@ -466,7 +471,20 @@
         let gameOver = false;
 
         // --- UI Modals & Modes ---
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function openModal(id, side = 'black') { 
+            const modal = document.getElementById(id);
+            const content = modal.querySelector('.modal-content');
+            
+            // Adjust rotation based on who clicked it
+            if (side === 'white') {
+                content.classList.add('rotated-180');
+            } else {
+                content.classList.remove('rotated-180');
+            }
+            
+            modal.classList.add('active'); 
+        }
+        
         function closeModal(e, id) { 
             if(e && e.target.id !== id) return;
             document.getElementById(id).classList.remove('active'); 
@@ -476,13 +494,16 @@
             const mode = document.getElementById('game-mode').value;
             const appContainer = document.getElementById('app-container');
             const boardEl = document.getElementById('board');
+            const diffContainer = document.getElementById('difficulty-container');
             
             if (mode === 'PvP') {
                 appContainer.classList.add('pvp-mode');
                 boardEl.classList.add('pvp'); 
+                diffContainer.style.display = 'none'; // Hide Difficulty in PvP
             } else {
                 appContainer.classList.remove('pvp-mode');
                 boardEl.classList.remove('pvp');
+                diffContainer.style.display = 'flex'; // Show Difficulty in PvE
             }
             initGame();
         }
