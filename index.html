@@ -308,10 +308,16 @@
         .log-highlight { color: #d63031; font-weight: bold; }
 
         .legend { font-size: 0.95rem; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .legend-item { display: flex; align-items: center; gap: 10px; color: #2d3436; font-weight: 500;}
+        .legend-item { 
+            display: flex; align-items: center; gap: 10px; color: #2d3436; font-weight: 500;
+            cursor: pointer; padding: 5px; border-radius: 6px; transition: background-color 0.2s, transform 0.2s;
+        }
+        .legend-item:hover {
+            background-color: #e9ecef; transform: translateX(4px);
+        }
         .legend-icon { 
             width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; 
-            background: #2d3436; color: white; font-size: 14px; font-weight: bold;
+            background: #2d3436; color: white; font-size: 14px; font-weight: bold; flex-shrink: 0;
         }
         .pve-legend .legend-item { font-size: 0.85rem; }
         .pve-legend .legend-icon { width: 24px; height: 24px; font-size: 12px; }
@@ -388,17 +394,25 @@
 
                     <div class="panel">
                         <h3>Legend</h3>
+                        <p style="font-size: 12px; color: #0984e3; margin-top: 0; margin-bottom: 10px; font-weight: bold; font-style: italic;">
+                            Click to see the details.
+                        </p>
                         <div class="legend pve-legend" style="gap: 8px;">
-                            <div class="legend-item"><div class="legend-icon">Q</div> Quark</div>
-                            <div class="legend-item"><div class="legend-icon">L</div> Lepton</div>
-                            <div class="legend-item"><div class="legend-icon">ν</div> Neutrino</div>
-                            <div class="legend-item"><div class="legend-icon">g</div> Gluon</div>
-                            <div class="legend-item"><div class="legend-icon">γ</div> Photon</div>
-                            <div class="legend-item"><div class="legend-icon">W</div> W/Z Boson</div>
-                            <div class="legend-item" style="grid-column: 1 / -1;">
+                            <div class="legend-item" onclick="showPieceDetails(event, 'Q')"><div class="legend-icon">Q</div> Quark</div>
+                            <div class="legend-item" onclick="showPieceDetails(event, 'L')"><div class="legend-icon">L</div> Lepton</div>
+                            <div class="legend-item" onclick="showPieceDetails(event, 'ν')"><div class="legend-icon">ν</div> Neutrino</div>
+                            <div class="legend-item" onclick="showPieceDetails(event, 'g')"><div class="legend-icon">g</div> Gluon</div>
+                            <div class="legend-item" onclick="showPieceDetails(event, 'γ')"><div class="legend-icon">γ</div> Photon</div>
+                            <div class="legend-item" onclick="showPieceDetails(event, 'W')"><div class="legend-icon">W</div> W/Z Boson</div>
+                            <div class="legend-item" style="grid-column: 1 / -1;" onclick="showPieceDetails(event, 'H')">
                                 <div class="legend-icon" style="background:var(--yellow-dark); color:#2d3436;">H</div> The Higgs
                             </div>
                         </div>
+                        <p style="font-size: 12px; color: #636e72; margin-top: 15px; margin-bottom: 0; line-height: 1.4;">
+                            <strong>Goal:</strong> Capture the opponent's Higgs.<br>
+                            <strong>Bosons:</strong> Cannot leave the yellow zone. They attack remotely without moving.<br>
+                            <strong>Fermions:</strong> Move across the board and attack by capturing the square.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -427,14 +441,17 @@
         <div class="modal-content" id="legend-modal-content" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal(null, 'legend-modal')">&times;</button>
             <h2>Legend Reference</h2>
+            <p style="font-size: 13px; color: #0984e3; margin-top: 0; margin-bottom: 15px; font-weight: bold; font-style: italic;">
+                Click to see the details.
+            </p>
             <div class="legend">
-                <div class="legend-item"><div class="legend-icon">Q</div> Quark (Hadron)</div>
-                <div class="legend-item"><div class="legend-icon">L</div> Charged Lepton</div>
-                <div class="legend-item"><div class="legend-icon">ν</div> Neutrino</div>
-                <div class="legend-item"><div class="legend-icon">g</div> Gluon (3x3 AoE)</div>
-                <div class="legend-item"><div class="legend-icon">γ</div> Photon (Diagonal)</div>
-                <div class="legend-item"><div class="legend-icon">W</div> W/Z Boson (Ortho)</div>
-                <div class="legend-item" style="grid-column: 1 / -1;">
+                <div class="legend-item" onclick="showPieceDetails(event, 'Q')"><div class="legend-icon">Q</div> Quark (Hadron)</div>
+                <div class="legend-item" onclick="showPieceDetails(event, 'L')"><div class="legend-icon">L</div> Charged Lepton</div>
+                <div class="legend-item" onclick="showPieceDetails(event, 'ν')"><div class="legend-icon">ν</div> Neutrino</div>
+                <div class="legend-item" onclick="showPieceDetails(event, 'g')"><div class="legend-icon">g</div> Gluon (3x3 AoE)</div>
+                <div class="legend-item" onclick="showPieceDetails(event, 'γ')"><div class="legend-icon">γ</div> Photon (Diagonal)</div>
+                <div class="legend-item" onclick="showPieceDetails(event, 'W')"><div class="legend-icon">W</div> W/Z Boson (Ortho)</div>
+                <div class="legend-item" style="grid-column: 1 / -1;" onclick="showPieceDetails(event, 'H')">
                     <div class="legend-icon" style="background:var(--yellow-dark); color:#2d3436;">H</div> The Higgs
                 </div>
             </div>
@@ -443,6 +460,28 @@
                 <strong>Bosons:</strong> Cannot leave the yellow zone. They attack remotely without moving.<br>
                 <strong>Fermions:</strong> Move across the board and attack by capturing the square.
             </p>
+        </div>
+    </div>
+
+    <!-- Piece Specific Detail Modal -->
+    <div class="modal-overlay" id="piece-detail-modal" onclick="closeModal(event, 'piece-detail-modal')" style="z-index: 1001;">
+        <div class="modal-content" id="piece-detail-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal(null, 'piece-detail-modal')">&times;</button>
+            
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid var(--panel-border); padding-bottom: 10px;">
+                <div class="legend-icon" id="detail-icon" style="width: 42px; height: 42px; font-size: 20px;">X</div>
+                <h2 style="margin: 0; border: none; padding: 0;" id="detail-name">Name</h2>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <h4 style="margin: 0 0 8px 0; color: #0984e3;">Movement & Attack Rule</h4>
+                <p id="detail-rule" style="margin: 0; font-size: 14px; line-height: 1.5; color: #2d3436; white-space: pre-wrap;"></p>
+            </div>
+
+            <div>
+                <h4 style="margin: 0 0 8px 0; color: #d63031;">Interactions</h4>
+                <p id="detail-interactions" style="margin: 0; font-size: 14px; line-height: 1.5; color: #2d3436; white-space: pre-wrap;"></p>
+            </div>
         </div>
     </div>
 
@@ -462,6 +501,45 @@
         };
 
         const PIECE_VALUES = { 'H': 100000, 'W': 900, 'γ': 700, 'g': 600, 'ν': 400, 'L': 300, 'Q': 200 };
+
+        // --- Detailed Rules Dictionary ---
+        const PIECE_DETAILS = {
+            'Q': {
+                name: 'Quark & Hadron',
+                rule: 'Move 1 square per turn.\n\nCombine with any single Quark (friendly or enemy) to form a Hadron:\n- Meson (2 Quarks)\n- Baryon (3 Quarks)\n\nMeson (2) eliminates Meson (2); Baryon (3) eliminates both Meson (2) and Baryon (3).',
+                interactions: 'Interact with: Q; g; W; H'
+            },
+            'L': {
+                name: 'Charged Lepton',
+                rule: 'Move and attack in straight (orthogonal) lines.',
+                interactions: 'Interact with: L; W; γ; H'
+            },
+            'ν': {
+                name: 'Neutrino',
+                rule: 'Move: Orthogonal lines.\nAttack: Can only strike a target by jumping over exactly one piece on that line.',
+                interactions: 'Interact with: ν; W; H'
+            },
+            'g': {
+                name: 'Gluon',
+                rule: '3×3 Area of Effect centered on the piece.',
+                interactions: 'Interact with: Q'
+            },
+            'γ': {
+                name: 'Photon',
+                rule: 'Attacks diagonally, with unlimited range.',
+                interactions: 'Interact with: Q; L'
+            },
+            'W': {
+                name: 'W/Z Boson',
+                rule: 'Orthogonal attack within a 4-square range.',
+                interactions: 'Interact with: all fermions'
+            },
+            'H': {
+                name: 'The Higgs',
+                rule: 'Moves or attacks only 1 square per turn.',
+                interactions: 'Interact with: all fermions'
+            }
+        };
 
         // --- Game State ---
         let board = []; 
@@ -488,6 +566,29 @@
         function closeModal(e, id) { 
             if(e && e.target.id !== id) return;
             document.getElementById(id).classList.remove('active'); 
+        }
+
+        // --- Open Specific Piece Details ---
+        function showPieceDetails(event, type) {
+            const data = PIECE_DETAILS[type];
+            
+            // Update modal content
+            const iconEl = document.getElementById('detail-icon');
+            iconEl.textContent = type;
+            iconEl.style.background = type === 'H' ? 'var(--yellow-dark)' : '#2d3436';
+            iconEl.style.color = type === 'H' ? '#2d3436' : 'white';
+            
+            document.getElementById('detail-name').textContent = data.name;
+            document.getElementById('detail-rule').textContent = data.rule;
+            document.getElementById('detail-interactions').textContent = data.interactions;
+
+            // Determine if the parent container is rotated (for PvP Top Player perspective)
+            let side = 'black';
+            if (event && event.currentTarget.closest('.rotated-180')) {
+                side = 'white';
+            }
+            
+            openModal('piece-detail-modal', side);
         }
 
         function toggleMode() {
