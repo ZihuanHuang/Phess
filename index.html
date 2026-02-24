@@ -37,32 +37,94 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        /* --- App Container & Layout Management --- */
+        #app-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 0;
-            padding: 30px 20px;
-            user-select: none;
+            padding: 20px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        #app-header {
+            text-align: center;
+            margin-bottom: 25px;
+            width: 320px; /* Fixed width to aid rotation constraints */
         }
 
         h1 { margin: 0 0 5px 0; font-size: 2.5rem; letter-spacing: 3px; font-weight: 800; color: #2d3436; }
-        .subtitle { margin-bottom: 25px; font-style: italic; color: #636e72; font-size: 1.1rem; }
+        .subtitle { margin: 0; font-style: italic; color: #636e72; font-size: 1.1rem; }
         
-        #game-container {
+        .game-row {
             display: flex;
             gap: 40px;
             align-items: flex-start;
-            flex-wrap: nowrap; 
             justify-content: center;
-            max-width: 1200px;
             width: 100%;
+            max-width: 1200px;
         }
 
-        @media (max-width: 950px) {
-            #game-container { flex-wrap: wrap; }
+        .pvp-only { display: none !important; }
+
+        /* === PvP Cross-Layout CSS Grid === */
+        #app-container.pvp-mode {
+            display: grid;
+            grid-template-columns: 200px auto 200px;
+            grid-template-rows: auto auto auto;
+            gap: 20px;
+            height: 100vh;
+            padding: 0;
+            align-items: center;
+            justify-items: center;
+            overflow: hidden;
         }
 
-        /* Board & Notation Wrapper */
+        #app-container.pvp-mode .game-row {
+            display: contents; /* Removes the flex wrapper from layout tree */
+        }
+
+        #app-container.pvp-mode #app-header {
+            grid-column: 1; grid-row: 2;
+            transform: rotate(-90deg);
+            margin: 0;
+        }
+
+        #app-container.pvp-mode #board-container {
+            grid-column: 2; grid-row: 2;
+        }
+
+        #app-container.pvp-mode #controls {
+            grid-column: 3; grid-row: 2;
+            transform: rotate(90deg);
+        }
+
+        #app-container.pvp-mode #top-info {
+            grid-column: 2; grid-row: 1;
+            transform: rotate(180deg);
+            display: flex !important;
+        }
+
+        #app-container.pvp-mode #bottom-info {
+            grid-column: 2; grid-row: 3;
+            display: flex !important;
+        }
+        
+        #app-container.pvp-mode #pve-info-panels {
+            display: none !important;
+        }
+
+        /* --- Board & Axes --- */
         .board-wrapper {
             display: flex;
             flex-direction: column;
@@ -75,33 +137,22 @@
             align-items: center;
         }
 
-        /* Axes Labels */
         .row-labels {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            height: 450px; 
-            font-weight: bold;
-            color: #b2bec3;
-            font-size: 14px;
+            display: flex; flex-direction: column; justify-content: space-around;
+            height: 450px; font-weight: bold; color: #b2bec3; font-size: 14px;
         }
         .row-labels.left { margin-right: 10px; }
         .row-labels.right { margin-left: 10px; }
         .row-label { height: 50px; display: flex; align-items: center; justify-content: center; width: 20px; }
 
         .col-labels {
-            display: flex;
-            width: 450px; 
-            justify-content: space-around;
-            font-weight: bold;
-            color: #b2bec3;
-            font-size: 14px;
+            display: flex; width: 450px; justify-content: space-around;
+            font-weight: bold; color: #b2bec3; font-size: 14px;
         }
         .col-labels.top { margin-bottom: 10px; }
         .col-labels.bottom { margin-top: 10px; }
         .col-label { width: 50px; text-align: center; }
 
-        /* 180 Degree Rotation for opponent's view */
         .rotated-180 { transform: rotate(180deg); }
 
         #board {
@@ -111,41 +162,28 @@
             border: 6px solid #2d3436;
             background-color: #2d3436;
             border-radius: 4px;
-            transition: border-color 0.4s ease; /* Removed box-shadow transition */
+            transition: border-color 0.4s ease; /* Flat turn indicators */
         }
 
-        /* Visual Turn Indicators on the Board (Flat Design) */
-        #board.turn-black {
-            border-color: #2d3436;
-        }
-        #board.turn-white {
-            border-color: #0984e3;
-        }
+        #board.turn-black { border-color: #2d3436; }
+        #board.turn-white { border-color: #0984e3; }
 
         .cell {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            cursor: pointer;
+            width: 50px; height: 50px; display: flex;
+            justify-content: center; align-items: center;
+            position: relative; cursor: pointer;
         }
 
-        /* Selection & Action Highlights */
         .cell.selected { box-shadow: inset 0 0 0 4px var(--highlight-selected); }
-        
         .cell.valid-move::after {
             content: ''; width: 14px; height: 14px;
             background-color: var(--highlight-move);
             border-radius: 50%; position: absolute; z-index: 2;
         }
-        
         .cell.valid-attack { 
             background-color: rgba(255, 71, 87, 0.3) !important;
             box-shadow: inset 0 0 0 3px var(--highlight-attack) !important;
         }
-
         .cell.attack-range::before {
             content: ''; width: 22px; height: 22px;
             border: 3px solid rgba(255, 71, 87, 0.7);
@@ -153,7 +191,7 @@
             z-index: 1; pointer-events: none;
         }
 
-        /* Flat Pieces */
+        /* --- Pieces --- */
         .piece {
             width: 38px; height: 38px; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
@@ -165,7 +203,6 @@
             background-color: var(--white-piece-bg); color: var(--white-piece-text); 
             border: 3px solid var(--white-piece-border); box-sizing: border-box;
         }
-        
         .piece.black { 
             background-color: var(--black-piece-bg); color: var(--black-piece-text); 
             border: 3px solid var(--black-piece-border); box-sizing: border-box;
@@ -174,7 +211,6 @@
         /* Rotate white pieces in PvP mode for opponent's perspective */
         #board.pvp .piece.white { transform: rotate(180deg); }
 
-        /* Flat Quark Layer Badge */
         .stack-badge {
             position: absolute; top: -6px; right: -6px;
             background-color: #ff4757; color: white; border-radius: 50%;
@@ -184,13 +220,10 @@
         }
         .piece.black .stack-badge { border-color: var(--black-piece-bg); }
 
-        /* Controls Panel */
+        /* --- Panels & Controls --- */
         #controls {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 320px;
-            flex-shrink: 0;
+            display: flex; flex-direction: column; gap: 15px;
+            width: 320px; flex-shrink: 0;
         }
 
         .panel {
@@ -198,7 +231,6 @@
             border-radius: 10px; border: 1px solid var(--panel-border);
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-
         .panel h3 { margin: 0 0 15px 0; border-bottom: 2px solid var(--panel-border); padding-bottom: 8px; color: #2d3436; font-size: 1.1rem; }
 
         .selector-group {
@@ -207,7 +239,6 @@
             border-radius: 6px; border: 1px solid var(--panel-border);
             margin-bottom: 10px;
         }
-
         .selector-group span { font-weight: bold; color: #636e72; font-size: 0.9rem; }
         .selector-group select {
             padding: 5px; border-radius: 4px; border: 1px solid #b2bec3;
@@ -223,9 +254,18 @@
         button:hover { opacity: 0.8; }
         button:disabled { background-color: #b2bec3; cursor: not-allowed; }
         #btn-restart { background-color: #d63031; }
-        .btn-modal { background-color: #2d3436; }
+        .btn-modal { background-color: #2d3436; margin: 0; padding: 8px 12px;}
 
-        /* Modals for Log and Legend */
+        .info-bar {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px; padding: 10px 20px;
+            display: flex; gap: 15px; align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .info-label { font-weight: bold; color: #636e72; font-size: 0.9rem; }
+
+        /* Modals */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.6); z-index: 1000;
@@ -240,14 +280,13 @@
             overflow-y: auto; position: relative; width: 420px;
         }
         .modal-content h2 { margin-top: 0; color: #2d3436; border-bottom: 2px solid var(--panel-border); padding-bottom: 10px; }
-        
         .modal-close {
             position: absolute; top: 20px; right: 20px; background: none; border: none;
             font-size: 24px; cursor: pointer; color: #636e72; width: auto; padding: 0;
         }
         .modal-close:hover { color: #d63031; opacity: 1; }
 
-        /* Log containers */
+        /* Log Containers */
         .log-container-pve {
             height: 150px; overflow-y: auto; font-size: 13px;
             font-family: 'Consolas', 'Courier New', monospace;
@@ -268,99 +307,109 @@
         .legend { font-size: 0.95rem; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .legend-item { display: flex; align-items: center; gap: 10px; color: #2d3436; font-weight: 500;}
         .legend-icon { 
-            width: 30px; height: 30px; border-radius: 50%; 
-            display: flex; justify-content: center; align-items: center; 
+            width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; 
             background: #2d3436; color: white; font-size: 14px; font-weight: bold;
         }
+        .pve-legend .legend-item { font-size: 0.85rem; }
+        .pve-legend .legend-icon { width: 24px; height: 24px; font-size: 12px; }
 
     </style>
 </head>
 <body>
 
-    <h1>PHESS</h1>
-    <div class="subtitle">Standard Model Particle Physics Chess</div>
-
-    <div id="game-container">
+    <div id="app-container">
         
-        <!-- Left Column: Board -->
-        <div class="board-wrapper">
-            <div class="col-labels top rotated-180" id="top-col-labels"></div>
-            <div class="board-row-container">
-                <div class="row-labels left" id="left-row-labels"></div>
-                <div id="board" class="turn-black"></div>
-                <div class="row-labels right rotated-180" id="right-row-labels"></div>
-            </div>
-            <div class="col-labels bottom" id="bottom-col-labels"></div>
+        <header id="app-header">
+            <h1>PHESS</h1>
+            <div class="subtitle">Standard Model Particle Physics Chess</div>
+        </header>
+
+        <!-- White's Folded Information Module (PvP) -->
+        <div id="top-info" class="pvp-only info-bar">
+            <span class="info-label">Information:</span>
+            <button class="btn-modal" onclick="openModal('log-modal')">📜 Combat Log</button>
+            <button class="btn-modal" onclick="openModal('legend-modal')">❓ Legend</button>
         </div>
 
-        <!-- Right Column: Panels -->
-        <div id="controls">
-            <div class="panel">
-                <h3>Game Controls</h3>
-                
-                <div class="selector-group">
-                    <span>Game Mode:</span>
-                    <select id="game-mode" onchange="toggleMode()">
-                        <option value="PvE">Player vs AI</option>
-                        <option value="PvP">Player vs Player</option>
-                    </select>
+        <div class="game-row">
+            <!-- Left Column: Board -->
+            <div id="board-container" class="board-wrapper">
+                <div class="col-labels top rotated-180" id="top-col-labels"></div>
+                <div class="board-row-container">
+                    <div class="row-labels left" id="left-row-labels"></div>
+                    <div id="board" class="turn-black"></div>
+                    <div class="row-labels right rotated-180" id="right-row-labels"></div>
                 </div>
-
-                <div class="selector-group" id="difficulty-container">
-                    <span>Game Difficulty:</span>
-                    <select id="difficulty">
-                        <option value="Easy">Easy</option>
-                        <option value="Medium" selected>Medium</option>
-                        <option value="Hard">Hard</option>
-                    </select>
-                </div>
-
-                <div id="turn-indicator" style="font-size: 1.1rem; margin: 15px 0 10px 0; text-align: center;">
-                    Turn: <strong style="color: var(--black-piece-bg);">Black</strong>
-                </div>
-                
-                <div class="btn-group">
-                    <button id="btn-undo" onclick="undo()">Undo Move</button>
-                    <button id="btn-restart" onclick="initGame()">Restart</button>
-                </div>
+                <div class="col-labels bottom" id="bottom-col-labels"></div>
             </div>
 
-            <!-- PvP Info Buttons (Hidden in PvE by default) -->
-            <div class="panel" id="pvp-info-panel" style="display: none;">
-                <h3>Information</h3>
-                <div class="btn-group" style="margin-top: 5px;">
-                    <button class="btn-modal" onclick="openModal('log-modal')">📜 Combat Log</button>
-                    <button class="btn-modal" onclick="openModal('legend-modal')">❓ Legend</button>
-                </div>
-            </div>
-
-            <!-- PvE Expanded Info (Visible in PvE by default) -->
-            <div id="pve-info-panels" style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- Right Column: Controls -->
+            <div id="controls">
                 <div class="panel">
-                    <h3>Combat Log</h3>
-                    <div id="log-pve" class="log-container-pve"></div>
+                    <h3>Game Controls</h3>
+                    
+                    <div class="selector-group">
+                        <span>Game Mode:</span>
+                        <select id="game-mode" onchange="toggleMode()">
+                            <option value="PvE">Player vs AI</option>
+                            <option value="PvP">Player vs Player</option>
+                        </select>
+                    </div>
+
+                    <div class="selector-group" id="difficulty-container">
+                        <span>Game Difficulty:</span>
+                        <select id="difficulty">
+                            <option value="Easy">Easy</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="Hard">Hard</option>
+                        </select>
+                    </div>
+
+                    <div id="turn-indicator" style="font-size: 1.1rem; margin: 15px 0 10px 0; text-align: center;">
+                        Turn: <strong style="color: var(--black-piece-bg);">Black</strong>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button id="btn-undo" onclick="undo()">Undo Move</button>
+                        <button id="btn-restart" onclick="initGame()">Restart</button>
+                    </div>
                 </div>
 
-                <div class="panel">
-                    <h3>Legend</h3>
-                    <div class="legend" style="gap: 8px; font-size: 0.85rem;">
-                        <div class="legend-item"><div class="legend-icon" style="width:24px; height:24px; font-size:12px;">Q</div> Quark</div>
-                        <div class="legend-item"><div class="legend-icon" style="width:24px; height:24px; font-size:12px;">L</div> Lepton</div>
-                        <div class="legend-item"><div class="legend-icon" style="width:24px; height:24px; font-size:12px;">ν</div> Neutrino</div>
-                        <div class="legend-item"><div class="legend-icon" style="width:24px; height:24px; font-size:12px;">g</div> Gluon</div>
-                        <div class="legend-item"><div class="legend-icon" style="width:24px; height:24px; font-size:12px;">γ</div> Photon</div>
-                        <div class="legend-item"><div class="legend-icon" style="width:24px; height:24px; font-size:12px;">W</div> W/Z Boson</div>
-                        <div class="legend-item" style="grid-column: 1 / -1;">
-                            <div class="legend-icon" style="width:24px; height:24px; font-size:12px; background:var(--yellow-dark); color:#2d3436;">H</div> The Higgs
+                <!-- PvE Expanded Info Panels -->
+                <div id="pve-info-panels" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="panel">
+                        <h3>Combat Log</h3>
+                        <div id="log-pve" class="log-container-pve"></div>
+                    </div>
+
+                    <div class="panel">
+                        <h3>Legend</h3>
+                        <div class="legend pve-legend" style="gap: 8px;">
+                            <div class="legend-item"><div class="legend-icon">Q</div> Quark</div>
+                            <div class="legend-item"><div class="legend-icon">L</div> Lepton</div>
+                            <div class="legend-item"><div class="legend-icon">ν</div> Neutrino</div>
+                            <div class="legend-item"><div class="legend-icon">g</div> Gluon</div>
+                            <div class="legend-item"><div class="legend-icon">γ</div> Photon</div>
+                            <div class="legend-item"><div class="legend-icon">W</div> W/Z Boson</div>
+                            <div class="legend-item" style="grid-column: 1 / -1;">
+                                <div class="legend-icon" style="background:var(--yellow-dark); color:#2d3436;">H</div> The Higgs
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
+
+        <!-- Black's Folded Information Module (PvP) -->
+        <div id="bottom-info" class="pvp-only info-bar">
+            <span class="info-label">Information:</span>
+            <button class="btn-modal" onclick="openModal('log-modal')">📜 Combat Log</button>
+            <button class="btn-modal" onclick="openModal('legend-modal')">❓ Legend</button>
+        </div>
+
     </div>
 
-    <!-- Modals (Used in PvP Mode) -->
+    <!-- Central Modals for Information -->
     <div class="modal-overlay" id="log-modal" onclick="closeModal(event, 'log-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal(null, 'log-modal')">&times;</button>
@@ -425,24 +474,15 @@
 
         function toggleMode() {
             const mode = document.getElementById('game-mode').value;
-            const diffContainer = document.getElementById('difficulty-container');
+            const appContainer = document.getElementById('app-container');
             const boardEl = document.getElementById('board');
             
-            const pvpInfoPanel = document.getElementById('pvp-info-panel');
-            const pveInfoPanels = document.getElementById('pve-info-panels');
-            
             if (mode === 'PvP') {
-                diffContainer.style.display = 'none';
+                appContainer.classList.add('pvp-mode');
                 boardEl.classList.add('pvp'); 
-                
-                pvpInfoPanel.style.display = 'block';
-                pveInfoPanels.style.display = 'none';
             } else {
-                diffContainer.style.display = 'flex';
+                appContainer.classList.remove('pvp-mode');
                 boardEl.classList.remove('pvp');
-                
-                pvpInfoPanel.style.display = 'none';
-                pveInfoPanels.style.display = 'flex';
             }
             initGame();
         }
@@ -477,21 +517,26 @@
             leftLabels.innerHTML = ''; rightLabels.innerHTML = '';
             topLabels.innerHTML = ''; bottomLabels.innerHTML = '';
             
-            // Rows: 9 to 1 (top to bottom)
+            // Left (normal): 9 to 1
             for(let i = 9; i >= 1; i--) {
                 const lblL = document.createElement('div'); lblL.className = 'row-label'; lblL.innerText = i;
                 leftLabels.appendChild(lblL);
-                
+            }
+            // Right (rotated 180): physical top is visual bottom, so loop 1 to 9
+            for(let i = 1; i <= 9; i++) {
                 const lblR = document.createElement('div'); lblR.className = 'row-label'; lblR.innerText = i;
                 rightLabels.appendChild(lblR);
             }
             
-            // Cols: A to I (left to right)
             const cols = ['A','B','C','D','E','F','G','H','I'];
+            // Bottom (normal): A to I
             cols.forEach(c => {
                 const lblB = document.createElement('div'); lblB.className = 'col-label'; lblB.innerText = c;
                 bottomLabels.appendChild(lblB);
-                
+            });
+            // Top (rotated 180): physical left is visual right, so loop I to A
+            const colsRev = [...cols].reverse();
+            colsRev.forEach(c => {
                 const lblT = document.createElement('div'); lblT.className = 'col-label'; lblT.innerText = c;
                 topLabels.appendChild(lblT);
             });
@@ -821,7 +866,7 @@
             }
         }
 
-        // --- AI Alpha-Beta Minimax Engine ---
+        // --- AI Engine ---
         function getBoardHash(b) {
             let h = '';
             for(let r = 0; r < BOARD_SIZE_H; r++) {
@@ -899,7 +944,6 @@
 
             const currentSide = isMaximizingPlayer ? 'white' : 'black';
             let moves = getAllPlayableMoves(currentSide);
-            
             if (moves.length === 0) return isMaximizingPlayer ? -999999 : 999999;
 
             moves.sort((a,b) => {
@@ -967,7 +1011,7 @@
                     else boardVal = minimax(depth - 1, -Infinity, Infinity, false);
                     
                     let newHash = getBoardHash(board);
-                    if (pastHashes.includes(newHash)) boardVal -= 3000; // Repetition Penalty
+                    if (pastHashes.includes(newHash)) boardVal -= 3000; 
 
                     revertMoveFast(rev);
 
@@ -990,10 +1034,7 @@
             if (gameOver) return;
             
             const mode = document.getElementById('game-mode').value;
-            // In PvE, ignore clicks if it's White's (AI's) turn
             if (mode === 'PvE' && turn !== 'black') return; 
-            // In PvP, both players click the same board, but they can only select their own pieces
-            // The turn variable naturally enforces this.
 
             const clickedPiece = board[r][c];
             const validMoveEl = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
@@ -1009,7 +1050,6 @@
                 return;
             }
 
-            // Verify piece belongs to the person whose turn it is
             if (clickedPiece && clickedPiece.side === turn) {
                 selected = {r, c};
                 renderBoard();
@@ -1074,7 +1114,6 @@
             const turnEl = document.getElementById('turn-indicator');
             const boardEl = document.getElementById('board');
             
-            // Clear both turn classes
             boardEl.classList.remove('turn-black', 'turn-white');
 
             if (turn === 'black') {
@@ -1088,7 +1127,6 @@
             }
             
             const mode = document.getElementById('game-mode').value;
-            // Disable undo if it's AI's turn in PvE mode. In PvP mode, allow undo at any time.
             document.getElementById('btn-undo').disabled = (history.length === 0 || (mode === 'PvE' && turn === 'white'));
         }
 
